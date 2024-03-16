@@ -3,3 +3,4 @@ design/
 node.modules/
 *.md
 .vscode
+node_modules
