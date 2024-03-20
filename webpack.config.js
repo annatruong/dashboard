@@ -6,9 +6,13 @@ const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
 const autoprefixer = require('autoprefixer');
 const TerserPlugin = require('terser-webpack-plugin');
 const ImageMinimizerPlugin = require('image-minimizer-webpack-plugin');
+// const sass = require('sass');
+
+// const result = sass.compile(scssFilename);
 
 module.exports = {
-  entry: './index.js',
+  mode: 'development',
+  entry: './app/js/script.js',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'bundle.js',
@@ -50,26 +54,9 @@ module.exports = {
         ],
       },
       {
-        test: /\.(png|jpe?g|gif|svg)$/i, // Match image files
+        test: /\.(svg)$/i, // Match image files
         include: path.resolve(__dirname, 'images'), // Target the images folder
         type: 'asset',
-        parser: {
-          dataUrlCondition: {
-            maxSize: 8 * 1024, // 8kb
-          },
-        },
-        use: [
-          {
-            loader: 'image-minimizer-webpack-plugin',
-            options: {
-              minimizerOptions: {
-                plugins: [
-                  ['imagemin-pngquant', { quality: [0.5, 0.75] }],
-                ],
-              },
-            },
-          },
-        ],
       },
     ],
   },
@@ -82,7 +69,22 @@ module.exports = {
       filename: 'styles.css',
     }),
     new webpack.HotModuleReplacementPlugin(),
-    new ImageMinimizerPlugin(), // Add ImageMinimizerPlugin to the plugins array
+    new ImageMinimizerPlugin({
+      minimizer: {
+        implementation: ImageMinimizerPlugin.svgoMinify,
+        options: {
+          encodeOptions: {
+            // Pass over SVGs multiple times to ensure all optimizations are applied. False by default
+            multipass: true,
+            plugins: [
+              // set of built-in plugins enabled by default
+              // see: https://github.com/svg/svgo#default-preset
+              "preset-default",
+            ],
+          },
+        },
+      },
+    }),
   ],
   optimization: {
     minimize: true,
